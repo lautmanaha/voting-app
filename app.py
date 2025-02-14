@@ -9,17 +9,6 @@ app = Flask(__name__)
 # 🔗 קישור לקובץ Google Sheets
 GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1udZCCmDPq-RXW1jdNnHLrH_at-4hMUbvpZ0IUQZxIRg/gviz/tq?tqx=out:csv"
 
-# 🎯 רשימת הסניפים עבור סטטיסטיקה מסוננת
-MA_BRANCHES = [
-    "מא אל קסום", "מא אלונה", "מא באר טוביה", "מא בית שאן", "מא ברנר", "מא גדרות",
-    "מא גולן", "מא גוש עציון", "מא גזר", "מא גליל עליון", "מא גליל תחתון", "מא דרום השרון",
-    "מא הגלבוע", "מא הר חברון", "מא זבולון", "מא חבל יבנה", "מא חוף אשקלון", "מא חוף הכרמל",
-    "מא חוף השרון", "מא לב השרון", "מא לכיש", "מא מבואות החרמון", "מא מגידו", "מא מודיעים",
-    "מא מטה אשר", "מא מטה בנימין", "מא מטה יהודה", "מא מעלה יוסף", "מא מרום הגליל", 
-    "מא מרחבים", "מא משגב", "מא נחל שורק", "מא עמק הירדן", "מא עמק חפר", "מא עמק יזרעאל",
-    "מא ערבות הירדן", "מא שדות דן", "מא שדות נגב", "מא שומרון", "מא שפיר"
-]
-
 def fetch_data():
     """📥 שליפת הנתונים מגוגל שיטס עם קידוד עברית תקין"""
     response = requests.get(GOOGLE_SHEETS_URL)
@@ -59,9 +48,21 @@ def user_data(user_id):
     filtered_df = user_df[user_df['Vote'].str.strip().str.lower() == "no"]
     filtered_df = filtered_df[['ID', 'Last_Name', 'First_Name', 'Phone', 'City', 'Branch']]
 
-    html_content = f"""
-    <!DOCTYPE html>
+    html_content = f"""<!DOCTYPE html>
     <html lang="he">
     <head>
         <meta charset="UTF-8">
-        <title>נת
+        <title>נתוני משתמש {user_id}</title>
+    </head>
+    <body>
+        <h2>🔍 נתוני משתמש {user_id}</h2>
+        <p>✅ הצביעו: {voted_yes}</p>
+        <p>❌ לא הצביעו: {voted_no}</p>
+        <h3>📋 רשימת המשתמשים שטרם הצביעו</h3>
+        {filtered_df.to_html(index=False)}
+    </body>
+    </html>"""
+    return Response(html_content, content_type="text/html; charset=utf-8")
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=10000)
